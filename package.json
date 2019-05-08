@@ -48,11 +48,12 @@
     "html",
     "multihtml",
     "html-webpack-plugin",
-    "multihtml-webpack-plugin"
+    "multihtml-webpack-plugin",
+    "multi-html-webpack-plugin"
   ],
   "license": "MIT",
   "main": "index.js",
-  "name": "multihtml-webpack-plugin",
+  "name": "@enyobao/multihtml-webpack-plugin",
   "peerDependencies": {
     "webpack": "^4.0.0"
   },

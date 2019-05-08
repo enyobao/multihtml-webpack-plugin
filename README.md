@@ -7,11 +7,11 @@
 
 
 ```bash
-  npm i --save-dev multihtml-webpack-plugin
+  npm i --save-dev @enyobao/multihtml-webpack-plugin
 ```
 
 ```bash
-  yarn add --dev multihtml-webpack-plugin
+  yarn add --dev @enyobao/multihtml-webpack-plugin
 ```
  
 
