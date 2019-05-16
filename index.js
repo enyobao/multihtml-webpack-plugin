@@ -15,6 +15,8 @@ const chunkSorter = require('./lib/chunksorter.js');
 const fsStatAsync = promisify(fs.stat);
 const fsReadFileAsync = promisify(fs.readFile);
 
+const { log } = require('../../basic');
+
 class HtmlWebpackPlugin {
   constructor (options) {
     // Default options
@@ -40,6 +42,7 @@ class HtmlWebpackPlugin {
   }
 
   apply (compiler) {
+    // log.warning('我想测试一下');
     const self = this;
     let isCompilationCached = false;
     let compilationPromise;
@@ -72,21 +75,27 @@ class HtmlWebpackPlugin {
       });
     }
 
-    compiler.plugin.bind(compiler, 'invalid')((fileName) => {
+    (compiler.hooks ? compiler.hooks.invalid.tap.bind(compiler.hooks.invalid, 'HtmlWebpackPlugin') : compiler.plugin.bind(compiler, 'invalid'))((fileName) => {
+
       if (childCompilation &&
-        childCompilation.fileDependencies.indexOf(fileName) !== -1) {
+        [...childCompilation.fileDependencies].indexOf(fileName) !== -1) {
         isValidChildCompilation = false;
       }
     });
   
-    compiler.plugin.bind(compiler, 'done')((stats) => {
+
+    (compiler.hooks ? compiler.hooks.done.tap.bind(compiler.hooks.done, 'HtmlWebpackPlugin') : compiler.plugin.bind(compiler, 'done'))((stats) => {
       var compilation = stats.compilation;
-  
       if (childCompilation) {
         // webpack watch
         childCompilation.fileDependencies.forEach(function (fileName) {
-          if (compilation.fileDependencies.indexOf(fileName) === -1) {
-            compilation.fileDependencies.push(fileName);
+          if ([...compilation.fileDependencies].indexOf(fileName) === -1) {
+              if (compilation.fileDependencies.add) {
+                  compilation.fileDependencies.add(filename);
+              } else {
+                  // Before Webpack 4 - fileDepenencies was an array
+                  compilation.fileDependencies.push(filename);
+              }
           }
         });
       }
@@ -96,11 +105,9 @@ class HtmlWebpackPlugin {
 
     // Backwards compatible version of: compiler.hooks.make.tapAsync()
     (compiler.hooks ? compiler.hooks.make.tapAsync.bind(compiler.hooks.make, 'HtmlWebpackPlugin') : compiler.plugin.bind(compiler, 'make'))((compilation, callback) => {
-      if (self.options.multihtmlCache && isValidChildCompilation) {
-        return callback();
-      }
-
-      // Compile the template (queued)
+      // if (self.options.multihtmlCache && isValidChildCompilation) {
+      //   return callback();
+      // }
       compilationPromise = childCompiler.compileTemplate(self.options.template, compiler.context, self.options.filename, compilation)
         .catch(err => {
           compilation.errors.push(prettyError(err, compiler.context).toString());
@@ -110,6 +117,7 @@ class HtmlWebpackPlugin {
           };
         })
         .then(compilationResult => {
+          // compilationResult输出内容为hash，outputName, content
           childCompilation = compilationResult.childCompilation;
 
           // If the compilation change didnt change the cache is valid
