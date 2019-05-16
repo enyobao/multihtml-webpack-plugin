@@ -15,8 +15,6 @@ const chunkSorter = require('./lib/chunksorter.js');
 const fsStatAsync = promisify(fs.stat);
 const fsReadFileAsync = promisify(fs.readFile);
 
-const { log } = require('../../basic');
-
 class HtmlWebpackPlugin {
   constructor (options) {
     // Default options
